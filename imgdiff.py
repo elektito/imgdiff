@@ -64,7 +64,7 @@ def get_image_diff(base_image, base_pixels, derived_pixels, region):
 
     for x in range(base_image.size[0]):
         for y in range(base_image.size[1]):
-            if (x, y) not in region:
+            if region and (x, y) not in region:
                 continue
             pixel1 = base_pixels[x, y]
             pixel2 = derived_pixels[x, y]
