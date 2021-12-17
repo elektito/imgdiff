@@ -14,31 +14,39 @@ def main():
         help='Image to diff against base image.')
 
     args = parser.parse_args()
-    img1 = Image.open(args.base_image)
-    img2 = Image.open(args.derived_image)
-    pixels1 = img1.load()
-    pixels2 = img2.load()
+    base_image = Image.open(args.base_image)
+    derived_images = [Image.open(i) for i in args.derived_image]
 
-    if img1.size != img2.size:
-        print('Images dot not have the same size.')
-        exit(1)
+    for img in derived_images:
+        if base_image.size != img.size:
+            print('Images dot not have the same size.')
+            exit(1)
 
-    if img1.mode != img2.mode:
-        print('Images do not have the same mode.')
-        exit(1)
+        if base_image.mode != img.mode:
+            print('Images do not have the same mode.')
+            exit(1)
 
-    diff = Image.new(img1.mode, img1.size, color='white')
-    diff.putpalette(img1.palette)
+    base_pixels = base_image.load()
+    for i, img in enumerate(derived_images):
+        derived_pixels = img.load()
+        diff = get_image_diff(base_image, base_pixels, derived_pixels)
+        diff.save(f'diff{i}.png')
+
+
+def get_image_diff(base_image, base_pixels, derived_pixels):
+    diff = Image.new(base_image.mode, base_image.size, color='white')
+    diff.putpalette(base_image.palette)
 
     diffpixels = diff.load()
 
-    for x in range(img1.size[0]):
-        for y in range(img1.size[1]):
-            pixel1 = pixels1[x, y]
-            pixel2 = pixels2[x, y]
+    for x in range(base_image.size[0]):
+        for y in range(base_image.size[1]):
+            pixel1 = base_pixels[x, y]
+            pixel2 = derived_pixels[x, y]
             if pixel1 != pixel2:
                 diffpixels[x, y] = pixel2
-    diff.save('diff.png')
+
+    return diff
 
 
 if __name__ == '__main__':
